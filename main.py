@@ -7,8 +7,6 @@ import os
 
 status_ok = '200 OK'
 status_400 = '400 Bad Request'
-status_401 = '401 Unauthorized'
-status_403 = '403 Forbidden'
 status_404 = '404 Not Found'
 status_500 = '500 Internal Server Error'
 
@@ -18,10 +16,6 @@ headers_plain = [('Content-Type','text/plain')]
 client = docker.APIClient()
 
 
-class SiteAccessException(Exception):
-  def __init__(self, content):
-    super(SiteAccessException).__init__()
-    self.content = content
 
 class SiteQueryException(Exception):
   def __init__(self, content):
@@ -47,11 +41,7 @@ def get_containerslist():
   return container_list
 
 
-def get_log(query_string, auth_string):
-  auth_key = os.getenv('SP_AUTH_KEY')
-  if auth_key and auth_string != auth_key:
-    raise SiteAccessException('X-Auth-Token not valid')
-
+def get_log(query_string):
   if query_string:
     query_list = query_string.split('&')
     container_name = None
@@ -102,22 +92,15 @@ def application(env, start_responce):
     return get_maincontent()
 
   elif path == '/log':
-
-    print('\n',env,'\n')
-
     query_string = env.get('QUERY_STRING')
-    auth_string = env.get('HTTP_X_AUTH_TOKEN')
 
     try:
-      content = get_log(query_string, auth_string)
+      content = get_log(query_string)
       start_responce(status_ok, headers_plain)
       return content
     except SiteQueryException as qe:
       start_responce(status_400, headers_plain)
       return qe.content
-    except SiteAccessException as ae:
-      start_responce(status_403, headers_plain)
-      return ae.content
 
   else:
     start_responce(status_404, headers_plain)
