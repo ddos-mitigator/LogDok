@@ -1,0 +1,4 @@
+#!/bin/bash
+
+uwsgi --plugins python3 --http-socket :3031 --wsgi-file main.py \
+      --check-static static/ --static-index index.html
