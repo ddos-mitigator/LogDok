@@ -1,34 +1,64 @@
 <!doctype html>
 <html lang="en">
-  <head>
+  <head style="-webkit-tap-highlight-color: transparent;">
     <title>LogDok</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-    <link rel="stylesheet" href="css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/style.css">
-
-    <script src="js/jquery-3.3.1.min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
-
-    <script src="js/updater.js"></script>
+    <style>
+      td, th {
+        padding: .5rem;
+      }
+      a {
+        color: #007bff;
+        text-decoration: none;
+        background-color: transparent;
+      }
+      tbody tr:hover {
+          background-color: rgba(0,0,0,.075);
+      }
+    </style>
   </head>
-  <body>
-    <main class="container">
-      <div class="row">
-        <div class="col-12">
-          <h1>Containers</h1>
-        </div>
-        <table class="table table-hover col-10 offset-1">
-          <thead class="thead-light">
+  <body style="font-size: 12pt; font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans',sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol','Noto Color Emoji';
+  color: #212529; background-color: whitesmoke; text-align: left;">
+    <main
+    style="margin-top: .5rem; max-width: 1000px; width: 100%; padding-right: 15px; padding-left: 15px;
+    margin-right: auto; margin-left: auto;">
+        <h1 style="text-align: center!important; font-weight: 500; font-size: 2.5rem;">Containers</h1>
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead style="color: #495057; background-color: #e9ecef; border-color: #dee2e6;">
             <tr>
               <th scope="col">Container</th>
               <th scope="col">Status</th>
+              <th scope="col">Tail log</th>
+              <th scope="col">File log</th>
             </th>
           </thead>
           <tbody id="content"></tbody>
         </table>
-      </div>
     </main>
   </body>
+  <script type="text/javascript">
+  document.addEventListener('DOMContentLoaded', function() {
+    let xhr = new XMLHttpRequest();
+    xhr.open('GET', 'containers/json?all=1', true);
+    xhr.responseType = 'json';
+    xhr.onload = function() {
+      let status = xhr.status;
+      if (status === 200) {
+        let content = ''
+        xhr.response.forEach(container => {
+          let containerName = container['Names'][0].substring(1)
+          content += `<tr id="${containerName}">
+                <td>${containerName}</td>
+                <td>${container['Status']}</td>
+                <td><a href="containers/${containerName}/logs?stdout=1&stderr=1&tail=50">get last 50 log lines</a></td>
+                <td><a href="containers/${containerName}/logs?stdout=1&stderr=1">get all log as file</a></td>
+              </tr>`
+        });
+        document.querySelector('#content').innerHTML = content;
+      }
+    };
+    xhr.send();
+  });
+  </script>
 </html>
